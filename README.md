@@ -41,7 +41,7 @@ For ESP32-C6 on Home Assistant/ESPHome, you **must** limit compilation threads t
 ```yaml
 esphome:
   compile_process_limit: 1
-
+```
 ### 🤝 Credits & Acknowledgments
 This integration was made possible by the collective knowledge shared in the solar community. Special thanks to the following resources:
 
