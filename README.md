@@ -42,7 +42,7 @@ For ESP32-C6 on Home Assistant/ESPHome, you **must** limit compilation threads t
 esphome:
   compile_process_limit: 1
 
-## 🤝 Credits & Acknowledgments
+### 🤝 Credits & Acknowledgments
 This integration was made possible by the collective knowledge shared in the solar community. Special thanks to the following resources:
 
 - **[DIY Solar Forum](https://diysolarforum.com/threads/a-hack-to-connect-newer-anenji-aios-w-built-in-wifi-to-solarassistant.119887/)**: For the initial insights on hacking newer Anenji AIOs with built-in Wi-Fi.
