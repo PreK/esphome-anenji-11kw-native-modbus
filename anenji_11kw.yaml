@@ -34,7 +34,7 @@ api:
 
 ota:
   - platform: esphome
-    password: "5539639752e8bd9d136e1e921f16c023"
+    password: !secret ota_password
 
 logger:
   level: DEBUG
