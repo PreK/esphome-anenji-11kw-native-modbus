@@ -412,7 +412,7 @@ sensor:
     name: "${name} energy day"
     address: 702
     register_type: holding
-    value_type: S_WORD
+    value_type: U_WORD
     unit_of_measurement: "kWh"
     device_class: energy
     state_class: total_increasing
