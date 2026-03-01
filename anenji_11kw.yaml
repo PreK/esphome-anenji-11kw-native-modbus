@@ -8,8 +8,8 @@ esphome:
   name: ${name}
   friendly_name: ${friendly_name}
   project:
-    name: "syssi.esphome-smg-ii"
-    version: 1.4.0
+    name: "prek.anenji-11kw-modbus"
+    version: 1.0.0
 
 esp32:
   board: seeed_xiao_esp32c6
@@ -45,12 +45,11 @@ uart:
     baud_rate: 9600
     tx_pin: ${tx_pin}
     rx_pin: ${rx_pin}
-    debug:
-      direction: BOTH
-      dummy_receiver: false
-      sequence:
-        #- lambda: UARTDebug::log_string(direction, bytes);
-        - lambda: UARTDebug::log_hex(esphome::uart::UARTDirection::UART_DIRECTION_RX, bytes, ':');
+    #debug:
+    #  direction: BOTH
+    #  dummy_receiver: false
+    #  sequence:
+    #    - lambda: UARTDebug::log_hex(esphome::uart::UARTDirection::UART_DIRECTION_RX, bytes, ':');
 
 modbus:
   - id: modbus0
@@ -62,51 +61,86 @@ modbus_controller:
     address: 0x01
     modbus_id: modbus0
     command_throttle: 200ms
-    update_interval: 10s
+    update_interval: 6s
 
 time:
   - platform: sntp
 
+binary_sensor:
+  # Power Flow Status (Register 198)
+  - platform: modbus_controller
+    modbus_controller_id: smg0
+    name: "${name} PV Connected"
+    icon: 'mdi:solar-panel'
+    address: 198
+    register_type: holding
+    bitmask: 0x01
+    device_class: plug
+
+  - platform: modbus_controller
+    modbus_controller_id: smg0
+    name: "${name} Grid Present"
+    icon: 'mdi:transmission-tower'
+    address: 198
+    register_type: holding
+    bitmask: 0x04
+    device_class: power
+
+  - platform: modbus_controller
+    modbus_controller_id: smg0
+    name: "${name} Grid Charging"
+    icon: 'mdi:battery-charging-high'
+    address: 198
+    register_type: holding
+    bitmask: 0x100
+    device_class: battery_charging
+
+  - platform: modbus_controller
+    modbus_controller_id: smg0
+    name: "${name} Solar Charging"
+    icon: 'mdi:solar-power'
+    address: 198
+    register_type: holding
+    bitmask: 0x200
+    device_class: battery_charging
 
 sensor:
 
-  # Fault code                                                    ULong 100 2 R
+  # Fault code
   - platform: modbus_controller
     modbus_controller_id: smg0
     name: "${name} fault code"
+    icon: 'mdi:alert-circle'
     address: 100
     register_type: holding
     value_type: U_DWORD
     accuracy_decimals: 0
 
-  # Warning code                                                  ULong 108 2 R
+  # Warning code
   - platform: modbus_controller
     modbus_controller_id: smg0
     name: "${name} warning code"
+    icon: 'mdi:alert-outline'
     address: 108
     register_type: holding
     value_type: U_DWORD
     accuracy_decimals: 0
 
-  # Operation Mode                                                UInt  201 1 R 0: Power On
-  #                                                                             1: Standby
-  #                                                                             2: Mains
-  #                                                                             3: Off-Grid
-  #                                                                             4: Bypass
-  #                                                                             5: Charging
-  #                                                                             6: Fault
+  # Operation Mode ID
   - platform: modbus_controller
     modbus_controller_id: smg0
     name: "${name} operation mode id"
+    icon: 'mdi:state-machine'
     address: 201
     register_type: holding
     value_type: U_WORD
     accuracy_decimals: 0
 
-  # Effective mains voltage                              0.1V     Int   338 1 R
+  # Effective mains voltage
   - platform: modbus_controller
     modbus_controller_id: smg0
     name: "${name} ac mains voltage"
+    icon: 'mdi:flash'
     address: 338
     register_type: holding
     value_type: S_WORD
@@ -117,10 +151,11 @@ sensor:
     filters:
       - multiply: 0.1
 
-  # Mains Frequency                                      0.01Hz   Int   203 1 R
+  # Mains Frequency
   - platform: modbus_controller
     modbus_controller_id: smg0
     name: "${name} ac mains frequency"
+    icon: 'mdi:sine-wave'
     address: 203
     register_type: holding
     value_type: S_WORD
@@ -131,10 +166,11 @@ sensor:
     filters:
       - multiply: 0.01
 
-  # Average mains power                                  1W       Int   340 1 R
+  # Average mains power
   - platform: modbus_controller
     modbus_controller_id: smg0
     name: "${name} average mains power"
+    icon: 'mdi:home-lightning-bolt-outline'
     address: 340
     register_type: holding
     value_type: S_WORD
@@ -143,10 +179,11 @@ sensor:
     state_class: measurement
     accuracy_decimals: 0
 
-  # Output effective voltage                             0.1V     Int   606 1 R
+  # Output effective voltage
   - platform: modbus_controller
     modbus_controller_id: smg0
     name: "${name} output effective voltage"
+    icon: 'mdi:home-flash-outline'
     address: 606
     register_type: holding
     value_type: S_WORD
@@ -157,10 +194,11 @@ sensor:
     filters:
       - multiply: 0.1
 
-  # Output effective Current                             0.1A     Int   605 1 R
+  # Output effective Current
   - platform: modbus_controller
     modbus_controller_id: smg0
     name: "${name} output effective Current"
+    icon: 'mdi:current-ac'
     address: 605
     register_type: holding
     value_type: S_WORD
@@ -171,10 +209,11 @@ sensor:
     filters:
       - multiply: 0.1
 
-  # Output frequency                                     0.01Hz   Int   607 1 R
+  # Output frequency
   - platform: modbus_controller
     modbus_controller_id: smg0
     name: "${name} output frequency"
+    icon: 'mdi:sine-wave'
     address: 607
     register_type: holding
     value_type: S_WORD
@@ -185,10 +224,11 @@ sensor:
     filters:
       - multiply: 0.01
 
-  # Output active power                                  1W       Int   254 1 R
+  # Output active power
   - platform: modbus_controller
     modbus_controller_id: smg0
     name: "${name} output active power"
+    icon: 'mdi:flash-circle'
     address: 254
     register_type: holding
     value_type: S_WORD
@@ -197,10 +237,11 @@ sensor:
     state_class: measurement
     accuracy_decimals: 0
 
-  # Output apparent power                                1VA      Int   255 1 R
+  # Output apparent power
   - platform: modbus_controller
     modbus_controller_id: smg0
     name: "${name} output apparent power"
+    icon: 'mdi:flash-circle-outline'
     address: 255
     register_type: holding
     value_type: S_WORD
@@ -209,10 +250,11 @@ sensor:
     state_class: measurement
     accuracy_decimals: 0
 
-  # Battery average voltage                              0.1V     Int   277 1 R
+  # Battery average voltage
   - platform: modbus_controller
     modbus_controller_id: smg0
     name: "${name} battery average voltage"
+    icon: 'mdi:car-battery'
     address: 277
     register_type: holding
     value_type: S_WORD
@@ -223,10 +265,11 @@ sensor:
     filters:
       - multiply: 0.1
 
-  # Battery average Current                              0.1A     Int   278 1 R
+  # Battery average Current
   - platform: modbus_controller
     modbus_controller_id: smg0
     name: "${name} battery average Current"
+    icon: 'mdi:current-dc'
     address: 278
     register_type: holding
     value_type: S_WORD
@@ -237,10 +280,11 @@ sensor:
     filters:
       - multiply: 0.1
 
-  # Battery average power                                1W       Int   279 1 R
+  # Battery average power
   - platform: modbus_controller
     modbus_controller_id: smg0
     name: "${name} battery average power"
+    icon: 'mdi:battery-arrow-up-down'
     address: 279
     register_type: holding
     value_type: S_WORD
@@ -249,10 +293,11 @@ sensor:
     state_class: measurement
     accuracy_decimals: 0
 
-  # Battery state of charge                              1%       UInt  280 1 R
+  # Battery state of charge
   - platform: modbus_controller
     modbus_controller_id: smg0
     name: "${name} battery state of charge"
+    icon: 'mdi:battery-50'
     address: 280
     register_type: holding
     value_type: U_WORD
@@ -261,10 +306,11 @@ sensor:
     state_class: measurement
     accuracy_decimals: 0
 
-  # PV1 average voltage                                   0.1V     Int   351 1 R
+  # PV1 average voltage
   - platform: modbus_controller
     modbus_controller_id: smg0
     name: "${name} pv1 average voltage"
+    icon: 'mdi:solar-panel-large'
     address: 351
     register_type: holding
     value_type: S_WORD
@@ -275,10 +321,11 @@ sensor:
     filters:
       - multiply: 0.1
 
-  # PV2 average voltage                                   0.1V     Int   389 1 R
+  # PV2 average voltage
   - platform: modbus_controller
     modbus_controller_id: smg0
     name: "${name} pv2 average voltage"
+    icon: 'mdi:solar-panel-large'
     address: 389
     register_type: holding
     value_type: S_WORD
@@ -289,10 +336,11 @@ sensor:
     filters:
       - multiply: 0.1
 
-  # PV1 average current                                   0.1A     Int   352 1 R
+  # PV1 average current
   - platform: modbus_controller
     modbus_controller_id: smg0
     name: "${name} pv1 average current"
+    icon: 'mdi:current-dc'
     address: 352
     register_type: holding
     value_type: S_WORD
@@ -303,10 +351,11 @@ sensor:
     filters:
       - multiply: 0.1
 
-  # PV2 average current                                   0.1A     Int   390 1 R
+  # PV2 average current
   - platform: modbus_controller
     modbus_controller_id: smg0
     name: "${name} pv2 average current"
+    icon: 'mdi:current-dc'
     address: 390
     register_type: holding
     value_type: S_WORD
@@ -317,11 +366,12 @@ sensor:
     filters:
       - multiply: 0.1
 
-  # PV1 average power                                     1W       Int   223 1 R
+  # PV1 average power
   - platform: modbus_controller
     modbus_controller_id: smg0
     id: smg0_pv1_average_power
     name: "${name} pv1 average power"
+    icon: 'mdi:solar-power-variant'
     address: 353
     register_type: holding
     value_type: S_WORD
@@ -330,11 +380,12 @@ sensor:
     state_class: measurement
     accuracy_decimals: 0
 
-  # PV2 average power                                     1W       Int   223 1 R
+  # PV2 average power
   - platform: modbus_controller
     modbus_controller_id: smg0
     id: smg0_pv2_average_power
     name: "${name} pv2 average power"
+    icon: 'mdi:solar-power-variant'
     address: 391
     register_type: holding
     value_type: S_WORD
@@ -344,11 +395,12 @@ sensor:
     accuracy_decimals: 0
 
 
-  # PV1-2 average power                                     1W       Int   223 1 R
+  # PV1-2 average power
   - platform: modbus_controller
     modbus_controller_id: smg0
     id: smg0_pv1_2_average_power
     name: "${name} pv1-2 average power"
+    icon: 'mdi:solar-power'
     address: 302
     register_type: holding
     value_type: S_WORD
@@ -357,10 +409,11 @@ sensor:
     state_class: measurement
     accuracy_decimals: 0
 
-  # PV1-2 charging average power                            1W       Int   303 1 R
+  # PV1-2 charging average power
   - platform: modbus_controller
     modbus_controller_id: smg0
     name: "${name} pv1-2 charging average power"
+    icon: 'mdi:battery-charging'
     address: 303
     register_type: holding
     value_type: S_WORD
@@ -369,22 +422,23 @@ sensor:
     state_class: measurement
     accuracy_decimals: 0
 
-  # Load percentage                                      1%       Int   225 1 R
+  # Load percentage
   - platform: modbus_controller
     modbus_controller_id: smg0
     name: "${name} load percentage"
+    icon: 'mdi:gauge'
     address: 256
     register_type: holding
     value_type: S_WORD
     unit_of_measurement: "%"
-    # device_class: battery
     state_class: measurement
     accuracy_decimals: 0
 
-  # DCDC Temperature                                     1°C      Int   281 1 R
+  # DCDC Temperature
   - platform: modbus_controller
     modbus_controller_id: smg0
     name: "${name} dcdc temperature"
+    icon: 'mdi:thermometer'
     address: 281
     register_type: holding
     value_type: S_WORD
@@ -393,10 +447,11 @@ sensor:
     state_class: measurement
     accuracy_decimals: 0
 
-  # Inverter Temperature                                 1°C      Int   231 1 R
+  # Inverter Temperature
   - platform: modbus_controller
     modbus_controller_id: smg0
     name: "${name} inverter temperature"
+    icon: 'mdi:thermometer-high'
     address: 231
     register_type: holding
     value_type: S_WORD
@@ -405,11 +460,12 @@ sensor:
     state_class: measurement
     accuracy_decimals: 0
 
- # Production DAY                                      1W       Int   702 1 R
+ # Production DAY
   - platform: modbus_controller
     modbus_controller_id: smg0
     id: smg0_energy_day
     name: "${name} energy day"
+    icon: 'mdi:solar-power-variant-outline'
     address: 702
     register_type: holding
     value_type: U_WORD
@@ -420,24 +476,25 @@ sensor:
     filters:
       - multiply: 0.01
 
-  # Rated power                                           W       Uint  691 1 R
+  # Rated power
   - platform: modbus_controller
     modbus_controller_id: smg0
     name: "${name} rated power"
+    icon: 'mdi:engine'
     address: 691
     register_type: holding
     value_type: U_WORD
     unit_of_measurement: "W"
     device_class: power
-    # state_class: measurement
     accuracy_decimals: 0
 
 select:
 
-  # Output priority                                               Uint  601 1 R/W 0: Utility-PV-Battery, 1: PV-Utility-Battery, 2: PV-Battery-Utility
+  # Output priority
   - platform: modbus_controller
     modbus_controller_id: smg0
     name: "${name} output priority"
+    icon: 'mdi:order-bool-ascending-variant'
     use_write_multiple: true
     address: 601
     value_type: U_WORD
@@ -446,10 +503,11 @@ select:
       "PV-Battery-Utility (SBU)": 2
       "PV-Utility-Battery (SUF)": 3
 
-  # Battery charging priority                                     Uint  331 1 R/W 0: Utility priority, 1: PV priority, 2: PV is at the same level as the Utility, 3: Only PV charging is allowed
+  # Battery charging priority
   - platform: modbus_controller
     modbus_controller_id: smg0
     name: "${name} battery charging priority"
+    icon: 'mdi:battery-charging-outline'
     use_write_multiple: true
     address: 632
     value_type: U_WORD
@@ -459,10 +517,11 @@ select:
       "OSO": 3
       "SOT": 4
 
-  # Turn on mode                                                  Uint  693 1 R/W 0: Can be turn-on locally or remotely, 1: Only local turn-on, 2: Only remote turn-on
+  # Turn on mode
   - platform: modbus_controller
     modbus_controller_id: smg0
     name: "${name} turn on mode"
+    icon: 'mdi:power-settings'
     use_write_multiple: true
     address: 693
     value_type: U_WORD
@@ -473,29 +532,32 @@ select:
 
 switch:
 
-   # Neutral to ground                                            Uint  707 1 R/W 0: neutral to ground is off, 1: neutral to ground is on
+   # Neutral to ground
   - platform: modbus_controller
     modbus_controller_id: smg0
     name: "${name} neutral to ground"
+    icon: 'mdi:earth'
     use_write_multiple: true
     address: 707
     register_type: holding
     bitmask: 1
 
-  # Remote switch                                                 Uint  694 1 R/W 0: Remote shutdown, 1: Remote turn-on
+  # Remote switch
   - platform: modbus_controller
     modbus_controller_id: smg0
     name: "${name} remote switch"
+    icon: 'mdi:remote'
     use_write_multiple: true
     address: 694
     register_type: holding
     bitmask: 1
 
 text_sensor:
-  # Fault code                                                    ULong 100 2 R
+  # Fault code
   - platform: modbus_controller
     modbus_controller_id: smg0
     name: "${name} fault"
+    icon: 'mdi:alert-octagon'
     address: 100
     register_type: holding
     register_count: 2
@@ -548,10 +610,11 @@ text_sensor:
       }
       return values;
 
-  # Warning code                                                  ULong 108 2 R
+  # Warning code
   - platform: modbus_controller
     modbus_controller_id: smg0
     name: "${name} warning"
+    icon: 'mdi:alert'
     address: 108
     register_type: holding
     register_count: 2
@@ -596,10 +659,11 @@ text_sensor:
       }
       return values;
 
-  # Operation Mode                                                UInt  201 1 R 0: Power On, 1: Standby, 2: Mains, 3: Off-Grid, 4: Bypass, 5: Charging, 6: Fault
+  # Operation Mode
   - platform: modbus_controller
     modbus_controller_id: smg0
     name: "${name} operation mode"
+    icon: 'mdi:cog-sync'
     address: 201
     register_type: holding
     raw_encode: HEXBYTES
@@ -617,26 +681,27 @@ text_sensor:
       return std::string("Unknown");
 
 number:
-  # Battery overvoltage protection point                          0.1V    Uint  631 1 R/W
+  # Battery overvoltage protection point
   - platform: modbus_controller
     modbus_controller_id: smg0
     name: "${name} battery overvoltage protection point"
+    icon: 'mdi:battery-alert'
     use_write_multiple: true
     address: 631
     register_type: holding
     value_type: U_WORD
     min_value: 0.0
-    # max_value: 100.0
     step: 0.1
     unit_of_measurement: "V"
     lambda: "return x * 0.1f;"
     write_lambda: |-
       return x * 10.0f;
 
-  # Max charging voltage                                          0.1V    Uint  637 1 R/W
+  # Max charging voltage
   - platform: modbus_controller
     modbus_controller_id: smg0
     name: "${name} max charging voltage"
+    icon: 'mdi:battery-plus'
     use_write_multiple: true
     address: 637
     register_type: holding
@@ -649,74 +714,75 @@ number:
     write_lambda: |-
       return x * 10.0f;
 
-  # Floating charging voltage                                     0.1V    Uint  638 1 R/W
+  # Floating charging voltage
   - platform: modbus_controller
     modbus_controller_id: smg0
     name: "${name} floating charging voltage"
+    icon: 'mdi:battery-sync'
     use_write_multiple: true
     address: 638
     register_type: holding
     value_type: U_WORD
     min_value: 0.0
-    # max_value: 100.0
     step: 0.1
     unit_of_measurement: "V"
     lambda: "return x * 0.1f;"
     write_lambda: |-
       return x * 10.0f;
 
-  # Battery discharge recovery point in mains mode                0.1V    Uint  646 1 R/W
+  # Battery discharge recovery point in mains mode
   - platform: modbus_controller
     modbus_controller_id: smg0
     name: "${name} battery discharge recovery point in mains mode"
+    icon: 'mdi:battery-arrow-up'
     use_write_multiple: true
     address: 646
     register_type: holding
     value_type: U_WORD
     min_value: 0.0
-    # max_value: 100.0
     step: 0.1
     unit_of_measurement: "V"
     lambda: "return x * 0.1f;"
     write_lambda: |-
       return x * 10.0f;
 
-  # Battery low voltage protection point in mains mode            0.1V    Uint  644 1 R/W
+  # Battery low voltage protection point in mains mode
   - platform: modbus_controller
     modbus_controller_id: smg0
     name: "${name} battery low voltage protection point in mains mode"
+    icon: 'mdi:battery-arrow-down'
     use_write_multiple: true
     address: 644
     register_type: holding
     value_type: U_WORD
     min_value: 0.0
-    # max_value: 100.0
     step: 0.1
     unit_of_measurement: "V"
     lambda: "return x * 0.1f;"
     write_lambda: |-
       return x * 10.0f;
 
-  # Battery low voltage protection point in off-grid mode          0.1V           Uint  643 1 R/W
+  # Battery low voltage protection point in off-grid mode
   - platform: modbus_controller
     modbus_controller_id: smg0
     name: "${name} battery low voltage protection point in off-grid mode"
+    icon: 'mdi:battery-arrow-down-outline'
     use_write_multiple: true
     address: 643
     register_type: holding
     value_type: U_WORD
     min_value: 0.0
-    # max_value: 100.0
     step: 0.1
     unit_of_measurement: "V"
     lambda: "return x * 0.1f;"
     write_lambda: |-
       return x * 10.0f;
 
-  # Max charging current                                      0.1A    Uint  640 1 R/W
+  # Max charging current
   - platform: modbus_controller
     modbus_controller_id: smg0
     name: "${name} max charging current"
+    icon: 'mdi:current-ac'
     use_write_multiple: true
     address: 640
     register_type: holding
@@ -729,10 +795,11 @@ number:
     write_lambda: |-
       return x * 10.0f;
 
-  # Max mains charging current                                0.1A    Uint  641 1 R/W
+  # Max mains charging current
   - platform: modbus_controller
     modbus_controller_id: smg0
     name: "${name} max mains charging current"
+    icon: 'mdi:transmission-tower-export'
     use_write_multiple: true
     address: 641
     register_type: holding
@@ -741,6 +808,9 @@ number:
     max_value: 100.0
     step: 0.1
     unit_of_measurement: "A"
+    lambda: "return x * 0.1f;"
+    write_lambda: |-
+      return x * 10.0f;
     lambda: "return x * 0.1f;"
     write_lambda: |-
       return x * 10.0f;
