@@ -405,20 +405,20 @@ sensor:
     state_class: measurement
     accuracy_decimals: 0
 
-  # Production DAY                                      1W       Int   702 1 R
+ # Production DAY                                      1W       Int   702 1 R
   - platform: modbus_controller
     modbus_controller_id: smg0
-    id: smg0_power_day
-    name: "${name} production day"
+    id: smg0_energy_day
+    name: "${name} energy day"
     address: 702
     register_type: holding
     value_type: S_WORD
-    unit_of_measurement: "W"
-    device_class: power
-    state_class: measurement
-    accuracy_decimals: 1
+    unit_of_measurement: "kWh"
+    device_class: energy
+    state_class: total_increasing
+    accuracy_decimals: 2
     filters:
-      - multiply: 10.0
+      - multiply: 0.01
 
   # Rated power                                           W       Uint  691 1 R
   - platform: modbus_controller
