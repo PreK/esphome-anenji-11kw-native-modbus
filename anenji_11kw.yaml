@@ -460,6 +460,7 @@ sensor:
     state_class: measurement
     accuracy_decimals: 0
 
+
  # Production DAY
   - platform: modbus_controller
     modbus_controller_id: smg0
@@ -475,6 +476,22 @@ sensor:
     accuracy_decimals: 2
     filters:
       - multiply: 0.01
+ 
+ # Production Total
+  - platform: modbus_controller
+    modbus_controller_id: smg0
+    id: smg0_energy_total
+    name: "${name} energy total"
+    icon: 'mdi:solar-power-variant-outline'
+    address: 703
+    register_type: holding
+    value_type: U_DWORD
+    unit_of_measurement: "kWh"
+    device_class: energy
+    state_class: total_increasing
+    accuracy_decimals: 2
+    filters:
+    multiply: 0.01
 
   # Rated power
   - platform: modbus_controller
