@@ -491,7 +491,7 @@ sensor:
     state_class: total_increasing
     accuracy_decimals: 2
     filters:
-    multiply: 0.01
+      - multiply: 0.01
 
   # Rated power
   - platform: modbus_controller
