@@ -529,10 +529,10 @@ select:
     address: 632
     value_type: U_WORD
     optionsmap:
-      "SOF": 1
-      "SNU": 2
-      "OSO": 3
-      "SOT": 4
+      "PV first (SOF)": 1
+      "PV and mains at the same level (SNU)": 2
+      "Only PV charging allowed (OSO)": 3
+      "PV first to meet the output remaining charge (SOR)": 4
 
   # Turn on mode
   - platform: modbus_controller
