@@ -104,6 +104,26 @@ binary_sensor:
     bitmask: 0x200
     device_class: battery_charging
 
+  - platform: modbus_controller
+    modbus_controller_id: smg0
+    name: "${name} Battery Charging"
+    id: bat_charging
+    icon: 'mdi:battery-arrow-up'
+    address: 198
+    register_type: holding
+    bitmask: 0x10
+    device_class: battery_charging
+
+  - platform: modbus_controller
+    modbus_controller_id: smg0
+    name: "${name} Battery Discharging"
+    id: bat_discharging
+    icon: 'mdi:battery-arrow-down'
+    address: 198
+    register_type: holding
+    bitmask: 0x20
+    device_class: battery
+
 sensor:
 
   # Fault code
@@ -696,7 +716,21 @@ text_sensor:
         case 6: return std::string("Fault");
       }
       return std::string("Unknown");
-
+      
+  # Battery Status
+  - platform: template
+    name: "${name} Battery Status"
+    icon: "mdi:battery-heart-variant"
+    lambda: |-
+      if (id(bat_charging).state) {
+        return {"Charging"};
+      } else if (id(bat_discharging).state) {
+        return {"Discharging"};
+      } else {
+        return {"Idle"};
+      }
+    update_interval: 5s
+    
 number:
   # Battery overvoltage protection point
   - platform: modbus_controller
