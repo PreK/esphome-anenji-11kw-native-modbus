@@ -9,7 +9,7 @@ esphome:
   friendly_name: ${friendly_name}
   project:
     name: "prek.anenji-11kw-modbus"
-    version: 1.0.0
+    version: 2.0.0
 
 esp32:
   board: seeed_xiao_esp32c6
@@ -31,13 +31,15 @@ web_server:
 
 # API Home Assistant
 api:
-
+  encryption:
+    key: !secret api_encryption_key
+    
 ota:
   - platform: esphome
     password: !secret ota_password
 
 logger:
-  level: DEBUG
+  level: INFO
   baud_rate: 0
 
 uart:
@@ -45,11 +47,6 @@ uart:
     baud_rate: 9600
     tx_pin: ${tx_pin}
     rx_pin: ${rx_pin}
-    #debug:
-    #  direction: BOTH
-    #  dummy_receiver: false
-    #  sequence:
-    #    - lambda: UARTDebug::log_hex(esphome::uart::UARTDirection::UART_DIRECTION_RX, bytes, ':');
 
 modbus:
   - id: modbus0
@@ -147,14 +144,14 @@ sensor:
     accuracy_decimals: 0
 
   # Operation Mode ID
-  - platform: modbus_controller
-    modbus_controller_id: smg0
-    name: "${name} operation mode id"
-    icon: 'mdi:state-machine'
-    address: 201
-    register_type: holding
-    value_type: U_WORD
-    accuracy_decimals: 0
+  #- platform: modbus_controller
+  #  modbus_controller_id: smg0
+  #  name: "${name} operation mode id"
+  #  icon: 'mdi:state-machine'
+  #  address: 201
+  #  register_type: holding
+  #  value_type: U_WORD
+  #  accuracy_decimals: 0
 
   # Effective mains voltage
   - platform: modbus_controller
@@ -602,15 +599,15 @@ select:
 
 switch:
 
-   # Neutral to ground
-  - platform: modbus_controller
-    modbus_controller_id: smg0
-    name: "${name} neutral to ground"
-    icon: 'mdi:earth'
-    use_write_multiple: true
-    address: 707
-    register_type: holding
-    bitmask: 1
+  # Neutral to ground
+  #- platform: modbus_controller
+  #  modbus_controller_id: smg0
+  #  name: "${name} neutral to ground"
+  #  icon: 'mdi:earth'
+  #  use_write_multiple: true
+  #  address: 707
+  #  register_type: holding
+  #  bitmask: 1
 
   # Remote switch
   - platform: modbus_controller
@@ -666,7 +663,7 @@ text_sensor:
       };
       std::string values = "";
 
-      uint32_t mask = modbus_controller::dword_from_hex_str(x, 0);
+      uint32_t mask = modbus::helpers::dword_from_hex_str(x, 0);
       if (mask) {
         for (int i = 0; i < FAULTS_SIZE; i++) {
           if (mask & (1 << i)) {
@@ -715,7 +712,7 @@ text_sensor:
       };
       std::string values = "";
 
-      uint32_t mask = modbus_controller::dword_from_hex_str(x, 0);
+      uint32_t mask = modbus::helpers::dword_from_hex_str(x, 0);
       if (mask) {
         for (int i = 0; i < WARNINGS_SIZE; i++) {
           if (mask & (1 << i)) {
@@ -738,7 +735,7 @@ text_sensor:
     register_type: holding
     raw_encode: HEXBYTES
     lambda: |-
-      uint16_t value = modbus_controller::word_from_hex_str(x, 0);
+      uint16_t value = modbus::helpers::word_from_hex_str(x, 0);
       switch (value) {
         case 0: return std::string("Power On");
         case 1: return std::string("Standby");
@@ -846,6 +843,20 @@ number:
     write_lambda: |-
       return x * 10.0f;
 
+  # Battery discharge SOC protection value in mains mode (AC mode)
+  - platform: modbus_controller
+    modbus_controller_id: smg0
+    name: "${name} battery min soc (ac mode)"
+    icon: 'mdi:battery-lock'
+    use_write_multiple: true
+    address: 647
+    register_type: holding
+    value_type: U_WORD
+    min_value: 0
+    max_value: 100
+    step: 1
+    unit_of_measurement: "%"
+
   # Battery low voltage protection point in off-grid mode
   - platform: modbus_controller
     modbus_controller_id: smg0
@@ -861,6 +872,20 @@ number:
     lambda: "return x * 0.1f;"
     write_lambda: |-
       return x * 10.0f;
+
+  # Battery discharge SOC protection value in off-grid mode
+  - platform: modbus_controller
+    modbus_controller_id: smg0
+    name: "${name} battery min soc (off-grid)"
+    icon: 'mdi:battery-lock-outline'
+    use_write_multiple: true
+    address: 650
+    register_type: holding
+    value_type: U_WORD
+    min_value: 0
+    max_value: 100
+    step: 1
+    unit_of_measurement: "%"
 
   # Max charging current
   - platform: modbus_controller
@@ -893,5 +918,7 @@ number:
     step: 0.1
     unit_of_measurement: "A"
     lambda: "return x * 0.1f;"
+    write_lambda: |-
+      return x * 10.0f;
     write_lambda: |-
       return x * 10.0f;
