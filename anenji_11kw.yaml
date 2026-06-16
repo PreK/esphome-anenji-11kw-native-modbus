@@ -920,5 +920,3 @@ number:
     lambda: "return x * 0.1f;"
     write_lambda: |-
       return x * 10.0f;
-    write_lambda: |-
-      return x * 10.0f;
